@@ -1,12 +1,19 @@
-package jp.co.gxp.tecktalk201902.jo;
+package tecktalk201902.jo;
 
 import java.util.HashSet;
 import java.util.Set;
 
+import jp.co.gxp.tecktalk201902.jo.PersonRepository;
 import jp.co.gxp.tecktalk201902.jo.entity.Jo;
 import jp.co.gxp.tecktalk201902.jo.entity.Person;
 
-public class StaticPersonRepository implements PersonRepository {
+/**
+ * PersonRepositoryのテスト用モック実装.
+ *
+ * @author y.takada
+ *
+ */
+public class MockPersonRepository implements PersonRepository {
 
 	/*
 	 * (non-Javadoc)
