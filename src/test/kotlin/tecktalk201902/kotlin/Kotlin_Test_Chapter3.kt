@@ -1,53 +1,48 @@
 package tecktalk201902.kotlin
 
-import org.hamcrest.Matchers.`is`
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
+import io.kotlintest.shouldBe
+import io.kotlintest.specs.StringSpec
+import io.kotlintest.spring.SpringListener
+import jp.co.gxp.tecktalk201902.Tecktalk201902Application
+import jp.co.gxp.tecktalk201902.jo.JoController
+import org.json.JSONObject
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.junit4.SpringRunner
+import org.springframework.test.context.ContextConfiguration
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.MvcResult
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
-import jp.co.gxp.tecktalk201902.Tecktalk201902Application
-import jp.co.gxp.tecktalk201902.jo.JoController
-import tecktalk201902.testcase.Test_Chapter3
 
-@RunWith(SpringRunner::class)
-@SpringBootTest(classes = { Tecktalk201902Application.class })
+//@RunWith(SpringRunner::class)
+@SpringJUnitConfig
+@SpringBootTest(classes = arrayOf(Tecktalk201902Application::class))
 @ActiveProfiles("production")
-class Kotlin_Test_Chapter3 : Test_Chapter3 {
-	/** spring test */
-	private val mockMvc: MockMvc? = null
-	/** テスト対象controller */
-	@Autowired
-	private val sut: JoController? = null
+@ContextConfiguration(classes = [(Tecktalk201902Application::class)])
+class Kotlin_Test_Chapter3 : StringSpec() {
 
-	@Before
-	fun setup() {
-// spring test setup.
-		mockMvc = MockMvcBuilders.standaloneSetup(sut).build()
-// TODO: repositoryのmock化.
-	}
+    override fun listeners() = listOf(SpringListener)
 
-	/* (non-Javadoc)
-         * @see tecktalk201902.junit4.Test_Chapter3#テスト３＿springbootのテスト()
-         */
-	@Override
-	@Test
-	@Throws(Exception::class)
-	fun テスト３＿springbootのテスト()
-	{
-// "/jo/stories" というurlにリクエストした結果を確認する.
-		val result = mockMvc!!.perform(MockMvcRequestBuilders.get("/jo/stories"))
-			.andExpect(jsonPath("$[2].number", `is`(3))) // json-pathによる結果のjsonのテスト.
-			.andExpect(jsonPath("$[2].title", `is`("Stardust Crusaders"))) //
-			.andExpect(jsonPath("$[2].characters[0].name", `is`("空条承太郎")))
-			.andReturn()
-		System.out.println(result!!.getResponse().getContentAsString())
-	}
+    /** spring test */
+    @Autowired
+    var sut: JoController? = null
+
+    init {
+        val mockMvc: MockMvc = MockMvcBuilders.standaloneSetup(sut).build()
+
+        "テスト３＿springbootのテスト" {
+            val result = mockMvc.perform(MockMvcRequestBuilders.get("/jo/stories"))
+//			.andExpect(jsonPath("$[2].number", `is`(3))) // json-pathによる結果のjsonのテスト.
+//			.andExpect(jsonPath("$[2].title", `is`("Stardust Crusaders"))) //
+//			.andExpect(jsonPath("$[2].characters[0].name", `is`("空条承太郎")))
+                    .andReturn()
+
+            val stories = JSONObject(result.response.contentAsString)
+            val story3 = stories.optJSONArray(null).getJSONObject(2)
+            story3.getInt("number") shouldBe 3
+            story3.getString("title") shouldBe "Stardust Crusaders"
+            story3.getJSONArray("characters").getJSONObject(0).getString("name") shouldBe "空条承太郎"
+        }
+    }
 }

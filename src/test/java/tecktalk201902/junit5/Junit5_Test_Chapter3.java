@@ -3,13 +3,12 @@ package tecktalk201902.junit5;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -26,7 +25,14 @@ import tecktalk201902.testcase.Test_Chapter3;
  * @author y.takada
  *
  */
-@RunWith(SpringRunner.class)
+/* ================================================================================
+ * ((1)) アノテーションいらないをjunit5のものにかえる
+ * import org.junit.Before;                          => import org.junit.jupiter.api.BeforeEach;
+ * import org.junit.Test;                            => import org.junit.jupiter.api.Test;
+ * import org.junit.runner.RunWith => org.springframework.test.context.junit.jupiter.SpringJUnitConfig ※ > spring 5
+ * ================================================================================*/
+//@RunWith(SpringRunner.class)
+@SpringJUnitConfig
 @SpringBootTest(classes = { Tecktalk201902Application.class })
 @ActiveProfiles("production")
 public class Junit5_Test_Chapter3 implements Test_Chapter3 {
@@ -38,19 +44,12 @@ public class Junit5_Test_Chapter3 implements Test_Chapter3 {
 	@Autowired
 	private JoController sut;
 
-	@Before
+	@BeforeEach
 	public void setup() {
 		// spring test setup.
 		mockMvc = MockMvcBuilders.standaloneSetup(sut).build();
-
-		// TODO: repositoryのmock化.
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see tecktalk201902.junit4.Test_Chapter3#テスト３＿springbootのテスト()
-	 */
 	@Override
 	@Test
 	public void テスト３＿springbootのテスト() throws Exception {
