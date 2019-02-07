@@ -1,76 +1,70 @@
-package tecktalk201902.groovy;
+package tecktalk201902.groovy
 
-import java.util.Arrays;
+import org.junit.Before
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
-import org.springframework.test.util.ReflectionTestUtils;
+import jp.co.gxp.tecktalk201902.jo.JoService
+import jp.co.gxp.tecktalk201902.jo.PersonRepository
+import jp.co.gxp.tecktalk201902.jo.entity.Story
+import spock.lang.Ignore
+import spock.lang.Specification
+import spock.lang.Unroll
+import tecktalk201902.testcase.Test_Chapter2
 
-import jp.co.gxp.tecktalk201902.jo.JoService;
-import jp.co.gxp.tecktalk201902.jo.entity.Story;
-import tecktalk201902.jo.MockPersonRepository;
-import tecktalk201902.testcase.Test_Chapter2;
+/* ================================================================================
+ * ((1)) spock.lang.Specification を 継承
+ * ================================================================================*/
+class Groovy_Test_Chapter2 extends Specification implements CharactersSupport, Test_Chapter2 {
 
-/**
- * Tecktalk 2019 02 後半.<br>
- * テストケース２のJunit4実装 パラメタライズドテスト.
- *
- * @author y.takada
- *
- */
-@RunWith(Parameterized.class)
-public class Groovy_Test_Chapter2 implements Test_Chapter2 {
+	private JoService sut
 
-	/** パラメータ１：第N部 */
-	@Parameter(0)
-	public Integer storyNumber;
-
-	/** パラメータ２：サブタイトル */
-	@Parameter(1)
-	public String name;
-
-	/** テスト対象 */
-	private JoService sut;
-
-	/**
-	 * パラメータ設定. キモい.
-	 * 
-	 * @return
-	 */
-	@Parameters(name = "第{0}部のjojoは{1}である.")
-	public static Iterable<Object[]> getParameters() {
-		return Arrays.asList(new Object[][] { //
-				{ 1, "ジョナサン・ジョースター" }, //
-				{ 2, "ジョセフ・ジョースター" }, //
-				{ 3, "空条承太郎" }, //
-				{ 4, "東方仗助" }, //
-				{ 5, "ジョルノ・ジョバーナ" } });
-	}
-
-	@Before
+/* ================================================================================
+ * ((2)). Junitいらない, ただし、＠Before相当はsetupという名前であること
+ ================================================================================ */
+//	@Before
 	public void setup() {
 		// テスト対象の初期化
-		sut = new JoService();
-		// モック実装をリフレクションを使ってフィールドに設定.
-		ReflectionTestUtils.setField(sut, "personRepository", new MockPersonRepository());
+		sut = new JoService()
+
+/* ================================================================================
+ * ((3)) spockframework built in mocking.
+ ================================================================================ */
+		PersonRepository personRepository = Mock(PersonRepository) {
+			characters(_) >> { Integer storyNumber ->
+				return mockCharacters(storyNumber)
+			}
+		}
+
+/* ================================================================================
+ * ((4)) groovyはprivateにアクセス可能(非推奨っぽいけど)
+ * ================================================================================*/
+		sut.personRepository = personRepository
 	}
 
-	/* (non-Javadoc)
-	 * @see tecktalk201902.junit4.Test_Chapter2#テスト２＿parameterizedテスト()
-	 */
-	@Override
-	@Test
+//	@Override
+	@Ignore("interfaceを実装しているため、spockframeworkがclosureに変換できないのでテスト実行できない")
 	public void テスト２＿parameterizedテスト() {
+	}
 
-		Story actual = sut.story(this.storyNumber);
+/*================================================================================
+ * ((5)) Patametertized & Unrollテスト
+ ================================================================================*/
+	@Unroll
+	def '第 #storyNumber 部の主人公は #nameExpected である'(Integer storyNumber, String nameExpected) {
 
-		Assert.assertEquals("登場人物は一人であること", 1, actual.getCharacters().size());
-		Assert.assertEquals("jojoの名前は" + this.name + "であること", this.name,
-				actual.getCharacters().iterator().next().getName());
+		when:
+		Story actual = sut.story(storyNumber)
+
+		then:
+		1 == actual.characters.size() // "登場人物は一人であること",
+		nameExpected == actual.characters[0].name // "jojoの名前は${name}であること",
+
+		where:
+		storyNumber || nameExpected
+		// --------------------
+		1           || "ジョナサン・ジョースター"
+		2           || "ジョセフ・ジョースター"
+		3           || "空条承太郎"
+		4           || "東方仗助"
+		5           || "ジョルノ・ジョバーナ"
 	}
 }
